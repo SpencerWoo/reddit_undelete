@@ -35,7 +35,7 @@
 
 function httpGet(theUrl)
 {
-    var xmlHttp = new XMLHttpRequest();
+    const xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
     xmlHttp.send( null );
     return xmlHttp.responseText;
@@ -43,7 +43,7 @@ function httpGet(theUrl)
 
 function httpGetAsync(theUrl, callback)
 {
-    var xmlHttp = new XMLHttpRequest();
+    const xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
             return xmlHttp.responseText;
@@ -55,27 +55,28 @@ function httpGetAsync(theUrl, callback)
 function getDeletedContents(id){
     url=`https://api.pushshift.io/reddit/search/comment/?ids=${id}`
     
-    var json_res = httpGet(url);
-    var res = JSON.parse(json_res)
+    const json_res = httpGet(url);
+    const res = JSON.parse(json_res)
     return res["data"][0]["body"];
 }
 
-function parseComment(deleted_elements){
-    deleted_element = deleted_elements.children[2];
+function parseComment(deleted_item){
+    return deleted_item.children[2];
+    // deleted_element = deleted_item.children[2];
 
-    return deleted_element.innerHTML;
+    // return deleted_element.innerHTML;
 }
 
 function parseId(deleted_elements){
-    var permalink = deleted_elements.getAttribute('data-permalink');
-    var strs = permalink.split('/');
-    var id = strs[strs.length - 2];
+    const permalink = deleted_elements.getAttribute('data-permalink');
+    const strs = permalink.split('/');
+    const id = strs[strs.length - 2];
 
     return id;
 }
 
-function replaceText(text, undeleted){
-    return text.replace('<p>[deleted]</p>', `<p>${undeleted}</p>`);
+function replaceText(comment, undeleted_text){
+    return comment.replace('<p>[deleted]</p>', `<p>${undeleted_text}</p>`);
 }
 
 function replaceComment(deleted_item){
@@ -83,7 +84,7 @@ function replaceComment(deleted_item){
     const id = parseId(deleted_item);
 
     const deleted_comment_text = getDeletedContents(id);
-    const deleted_comment = replaceText(comment, deleted_comment_text);
+    const deleted_comment = replaceText(comment.innerHTML, deleted_comment_text);
 
     comment.innerHTML = deleted_comment;
 }
@@ -91,9 +92,11 @@ function replaceComment(deleted_item){
 function controller(){
     const deleted_items = document.getElementsByClassName("deleted");
 
-    for (const i = 0 ; i < deleted_items.length ; i++) {
+    for (var i = 0 ; i < deleted_items.length ; i++) {
         replaceComment(deleted_items[i]);
     }
+
+    console.log("complete");
 }
 
 controller();
